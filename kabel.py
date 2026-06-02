@@ -125,6 +125,7 @@ while True:
         kabelbro3 = None
         distanse_kabel = None
         krav = None
+        Pkrav = None
         print("Dette er et prosjekt som er under arbeid. Ta infoene med en klype salt.")
         print("Vennligst skriv inn de nødvendige informasjonene: ")
         Pa = input("Skriv inn Pavgitt (W): ")
