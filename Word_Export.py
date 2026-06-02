@@ -35,6 +35,7 @@ def les():
 
                         "#{kvadrat} = ledertverrsnitt \n"
                         "#{Iz} = strømføringsevne \n"
+                        "#{Izmaks} = strømføringsevne før reduksjon \n"
                         "#{DeltaU} = spenningsfall i volt \n"
                         "#{deltaU} = spenningsfall i prosent \n"
                         "#{DeltaP} = effekttap i watt \n"
@@ -45,6 +46,7 @@ def les():
                         "#{Iz_tabell} = tabell for Iz \n"
                         "#{temp_tabell} = tabell for tempfaktor \n"
                         "#{gruppe_tabell} = tabell for gruppefaktor \n"
+                        "#{I_start} = startstrøm \n"
 
                         "#{karakteristikk_trip} = tripsstrøm \n"
                         "#{karakteristikk_område} = karakteristikkområde \n"
@@ -56,7 +58,8 @@ def les():
                         "#[e]{krav_strøm} = krav til strøm \n"
                         "#[e]{effekttap} = effekttap \n"
                         "#[e]{effekttap_Prosent} = effekttap i prosent \n"
-                       
+
+                        "# [U][tekst,undertekst] = tekst med understrekning \n"
                        
                         "Avgitt effekt av motoren er {Pavgitt}W \n"
                         "Spenningen på motoren er {U}V \n"
@@ -76,11 +79,15 @@ def les():
                         "Kabelbroen er {kabelbro2} \n"
                         "Kabelbroen er {kabelbro3} \n"
                         "Maksimum spenningsfall er {krav_spenningsfall}% \n"
+                        "Maksimum effekttap er {krav_effekttap}% \n"
 
                         "Kvadrat er {kvadrat} \n"
                         "Strømføringsevne er {Iz}A \n"
+                        "Strømføringsevne før reduksjon er {Izmaks}A \n"
                         "Spenningsfall i volt er {DeltaU}V \n"
                         "Spenningsfall i prosent er {deltaU}% \n"
+                        "Effekttap i watt er {DeltaP}W \n"
+                        "Effekttap i prosent er {deltaP}% \n"
                         "Belastningsstrøm er {Ib}A \n"
                         "Gruppefaktor er {gruppe_faktor} \n"
                         "Tempfaktor er {temp_faktor} \n"
@@ -90,13 +97,14 @@ def les():
                         "karakteristikk tripsrøm er {karakteristikk_trip}A \n"
                         "karakteristikk område er {karakteristikk_område} \n"
                         "karakteristikk er {karakteristikk} \n"
+                        "Startstrøm er {I_start}A \n"
 
                         "[e]{motorstrøm}\n"
                         "[e]{spenningsfall}\n"
                         "[e]{spenningsfall_prosent}\n"
                         "[e]{krav_strøm}\n"
                         "[e]{effekttap}\n"
-                        "[e]{effekttap_prosent}\n"
+                        "[e]{effekttap_Prosent}\n"
                         )
             path=current_dir+r"\mal.txt"
             return path
@@ -205,7 +213,7 @@ def tekstprossesering(Pa, U, Ib, sikring, karakeristikk, Cable_size, Cable_Curre
                 lines[i] = lines[i].replace("{spenningsfall_prosent}",str(f",[3],{math.ceil(DeltaU*100)/100}V,{U}V,{math.ceil(deltaU*100)/100}"))
                 lines[i] = lines[i].replace("{krav_strøm}",str(f",[4],{math.ceil(Ib*100)/100},{sikring},{math.ceil(Cable_Current*100)/100}"))
                 lines[i] = lines[i].replace("{effekttap}",str(f",[5],{lengde_kabel}M,{math.ceil(Ib*100)/100}A,{U}V,{Cable_size}mm^2,{math.ceil(DeltaP*100)/100}W"))
-                lines[i] = lines[i].replace("{effekttap_prosent}",str(f",[6],{math.ceil(DeltaP*100)/100}W,{math.ceil(Ib*100)/100}A,{U}V,{math.ceil(deltaP*100)/100}"))
+                lines[i] = lines[i].replace("{effekttap_Prosent}",str(f",[6],{math.ceil(DeltaP*100)/100}W,{math.ceil(Ib*100)/100}A,{U}V,{math.ceil(deltaP*100)/100}"))
                 lines[i] = lines[i].replace("{I_start}", str(math.ceil(Ib * SI * 100) / 100))
                 karakt_lower = {"A": 2, "B": 3, "C": 5, "K": 8, "D": 10}
                 lines[i] = lines[i].replace("{karakteristikk_trip}", str(karakt_lower.get(karakeristikk, 0) * sikring))
