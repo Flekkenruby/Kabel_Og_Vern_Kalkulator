@@ -46,7 +46,7 @@ def karakteristikk_område(karakteristikk):
     index = karaktt.index(karakteristikk)
     return karakt[index]
 
-def kabel(forlegning, sikring, temp, isolasjon, kabler, kabelbro, kabelbro1, kabelbro2, kabelbro3, distanse_kabel, distanse_tak, lengde_kabel, Ib, krav, U, Pkrav):
+def kabel(forlegning, sikring, temp, isolasjon, kabler, kabelbro, kabelbro1, kabelbro2, kabelbro3, distanse_kabel, distanse_tak, lengde_kabel, Ib, krav, U, Pkrav, Rho):
     col = None
     #forlegning
     main = table_52B_1(forlegning)
@@ -107,9 +107,9 @@ def kabel(forlegning, sikring, temp, isolasjon, kabler, kabelbro, kabelbro1, kab
         Iz = col[i]*temp_faktor*gruppe_faktor
         if Iz>= sikring:
             if lengde_kabel > 0:
-                DeltaU = (math.sqrt(3)*0.0175*lengde_kabel*Ib*cos_phi)/kvadrat[i]
+                DeltaU = (math.sqrt(3)*Rho*lengde_kabel*Ib*cos_phi)/kvadrat[i]
                 deltaU = (DeltaU)/U*100
-                DeltaP = (((0.0175*3*lengde_kabel)/kvadrat[i])*(Ib**2))
+                DeltaP = (((Rho*3*lengde_kabel)/kvadrat[i])*(Ib**2))
                 deltaP = (DeltaP)/(Ib*U*math.sqrt(3))*100
                 if deltaU < krav and deltaP < Pkrav:
                     return [kvadrat[i],Iz,DeltaU,deltaU,temp_faktor,gruppe_faktor,col[i],DeltaP,deltaP]
@@ -135,6 +135,7 @@ while True:
         SI = input("Skriv inn startstrømsfaktor SI (standard 1): ")
         forlegning = input("Skriv inn forlegningsmetode (f.eks. A1, C): ").upper()
         temp = input("Skriv inn omgivelsestemperatur (°C, standard N/A): ")
+        leder_temp = input("Skriv inn forventet ledertemperatur (°C, standard 70): ")
         isolasjon = input("Skriv inn isolasjonstype (PVC, PEX, standard PVC): ").upper()
         kabler = input("Hvor mange kabler er i gruppen? (standard 1): ")
         lengde_kabel = input("Hvor lang er kabelen? (m, standard 0): ")
@@ -164,6 +165,7 @@ while True:
         # Apply defaults
         SI = int(SI) if SI else 1
         temp = int(temp) if temp and temp != "N/A" else "N/A" 
+        leder_temp = int(leder_temp) if leder_temp else 20
         isolasjon = isolasjon if isolasjon else "PVC"
         kabler = int(kabler) if kabler else 1
         distanse_tak = distanse_tak if distanse_tak else "N"
@@ -177,7 +179,7 @@ while True:
         n = float(n)
 
         Ib = Pa / (math.sqrt(3) * U * cos_phi * n)
-
+        Rho = 0.0175 * (1+ 0.00393 * (leder_temp - 20))
         # Select fuse
         while sikring is None:
             for i in range(len(sikringer)):
@@ -186,7 +188,7 @@ while True:
                     break
 
         # Print results
-        cable_size, cable_current, DeltaU, deltaU, temp_faktor, gruppe_faktor, Izmaks, DeltaP, deltaP = kabel(forlegning, sikring, temp, isolasjon, kabler, kabelbro, kabelbro1, kabelbro2, kabelbro3, distanse_kabel, distanse_tak, lengde_kabel, Ib, krav, U, Pkrav)
+        cable_size, cable_current, DeltaU, deltaU, temp_faktor, gruppe_faktor, Izmaks, DeltaP, deltaP = kabel(forlegning, sikring, temp, isolasjon, kabler, kabelbro, kabelbro1, kabelbro2, kabelbro3, distanse_kabel, distanse_tak, lengde_kabel, Ib, krav, U, Pkrav, Rho)
         if cable_current == 0:
             raise ValueError("Det er for mange kabler. Vennligst prøv igjen med mindre antall kabler.")
         print(
@@ -200,7 +202,7 @@ while True:
         )
         a = input("Vil du skrive inn i word? (J/N): ").upper()
         if a == "J":
-            skriv(Pa, U, Ib, sikring, karakteristikk(Ib, SI, sikring), cable_size, cable_current, DeltaU, deltaU, isolasjon, kabler, lengde_kabel, distanse_kabel, distanse_tak, kabelbro, kabelbro1, kabelbro2, kabelbro3, krav, gruppe_faktor, temp_faktor,cos_phi, n,temp,SI,forlegning,karakteristikk_område(karakteristikk(Ib, SI, sikring)),Izmaks,DeltaP, deltaP,Pkrav)
+            skriv(Pa, U, Ib, sikring, karakteristikk(Ib, SI, sikring), cable_size, cable_current, DeltaU, deltaU, isolasjon, kabler, lengde_kabel, distanse_kabel, distanse_tak, kabelbro, kabelbro1, kabelbro2, kabelbro3, krav, gruppe_faktor, temp_faktor,cos_phi, n,temp,SI,forlegning,karakteristikk_område(karakteristikk(Ib, SI, sikring)),Izmaks,DeltaP, deltaP,Pkrav,Rho,leder_temp)
             print("Programmet er ferdig å skrive.")
             #Pa, U, Ib, sikring, karakeristikk, Cable_size, Cable_Current, DeltaU, deltaU, isolasjon, kabler, lengde_kabel, distanse_kabel, distanse_tak, kabelbro, kabelbro1, kabelbro2, kabelbro3, krav, kvadrat, gruppe_faktor, temp_faktor 
     except Exception as e:
