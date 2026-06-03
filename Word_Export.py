@@ -51,15 +51,24 @@ def les():
                         "#{karakteristikk_trip} = tripsstrøm \n"
                         "#{karakteristikk_område} = karakteristikkområde \n"
                         "#{karakteristikk} = karakteristikk \n"
-
+                        "#{DeltaP} = effekttap i watt \n"
+                        "#{deltaP} = effekttap i prosent \n"
+                        "#{Izmaks} = strømstyrke uten reduksjonsfaktorer \n"
+                        "#{krav_effekttap} = maks effekttap krav i prosent \n"
+                        "#{leder_temp} = forventet ledertemperatur i °C \n"
+                        "#{Rho} = resistivitet ved ledertemperatur \n"
+                        "#{Iz_tabell} = tabell for strømstyrke \n"
+                        "#{temp_tabell} = tabell for temperaturfaktor \n"
+                        "#{gruppe_tabell} = tabell for gruppefaktor \n"
                         "#[e]{motorstrøm} = motorstrøm \n"
                         "#[e]{spenningsfall} = spenningsfall \n"
                         "#[e]{spenningsfall_prosent} = spenningsfall i prosent \n"
                         "#[e]{krav_strøm} = krav til strøm \n"
-                        "#[e]{effekttap} = effekttap \n"
-                        "#[e]{effekttap_Prosent} = effekttap i prosent \n"
-
+                        "#[e]{effekttap} = effekttap formel \n"
+                        "#[e]{effekttap_Prosent} = effekttap i prosent formel \n"
+                        "#[e]{Rho_f} = resistivitet formel \n"
                         "# [U][tekst,undertekst] = tekst med understrekning \n"
+
                        
                         "Avgitt effekt av motoren er {Pavgitt}W \n"
                         "Spenningen på motoren er {U}V \n"
@@ -105,6 +114,7 @@ def les():
                         "[e]{krav_strøm}\n"
                         "[e]{effekttap}\n"
                         "[e]{effekttap_Prosent}\n"
+                        "[e]{Rho_f}\n"
                         )
             path=current_dir+r"\mal.txt"
             return path
@@ -124,19 +134,20 @@ def equation(line):
     if "1" in line[0]:
         keyboard.write(f"I_B=P_avgitt/(\\sqrt(3)×U×cos(φ)×\\eta)={line[1]}/(\\sqrt(3)×{line[2]}×{line[3]}×{line[4]})={line[5]}A")
     if "2" in line[0]:
-        keyboard.write(f"\\Delta U=(\\sqrt(3)×\\rho×M×Ib×cos(φ))/mm^2=(\\sqrt(3)×{0.0175}×{line[1]}×{line[2]}×{line[3]})/{line[4]}={line[5]}V")
+        keyboard.write(f"\\Delta U=(\\sqrt(3)×\\rho×M×Ib×cos(φ))/mm^2=(\\sqrt(3)×{line[1]}×{line[2]}×{line[3]}×{line[4]})/{line[5]}={line[6]}V")
     if "3" in line[0]:
         keyboard.write(f"\\Delta u=(\\Delta U)/U*100={line[1]}/{line[2]}*100={line[3]}%")
     if "4" in line[0]:
         keyboard.write(f"I_b≤I_n≤I_z={line[1]}A≤{line[2]}A≤{line[3]}A")
     if "5" in line[0]:
-        keyboard.write(f"\\Delta P=((\\rho×3×M)/mm^2)×(Ib^2)=(({0.0175}×3×{line[1]})/{line[4]})×{line[2]}^2={line[5]}W")
+        keyboard.write(f"\\Delta P=((\\rho×3×M)/mm^2)×(Ib^2)=(({line[1]}×3×{line[2]})/{line[3]})×{line[4]}^2={line[5]}W")
     if "6" in line[0]:
         keyboard.write(f"\\Delta p=(\\Delta P)/(Ib×U×\\sqrt(3))*100={line[1]}/({line[2]}×{line[3]}×\\sqrt(3))*100={line[4]}%")
+    if "7" in line[0]:
+        keyboard.write(f"\\rho_f=(\\rho_20×(1+ 0.00393×(T-20°C)))=({0.0175}×(1+ 0.00393×({line[1]}-20°C)))={line[2]}")
     keyboard.send("enter")
 
 def underscore(line):
-    under = False
     line = line.split()
     for i in range(len(line)):
         if "[U]" in line[i]:
@@ -163,7 +174,7 @@ def underscore(line):
 
     
 
-def tekstprossesering(Pa, U, Ib, sikring, karakeristikk, Cable_size, Cable_Current, DeltaU, deltaU, isolasjon, kabler, lengde_kabel, distanse_kabel, distanse_tak, kabelbro, kabelbro1, kabelbro2, kabelbro3, krav, gruppe_faktor, temp_faktor,cos_phi, n,temp,SI,forlegning,karakteristikk_område,izmaks,DeltaP, deltaP,Pkrav):
+def tekstprossesering(Pa, U, Ib, sikring, karakeristikk, Cable_size, Cable_Current, DeltaU, deltaU, isolasjon, kabler, lengde_kabel, distanse_kabel, distanse_tak, kabelbro, kabelbro1, kabelbro2, kabelbro3, krav, gruppe_faktor, temp_faktor,cos_phi, n,temp,SI,forlegning,karakteristikk_område,izmaks,DeltaP, deltaP,Pkrav,Rho,leder_temp):
     path = les()
     with open(path, "r", encoding="utf-8") as file:
         filetxt = file.read()
@@ -180,6 +191,8 @@ def tekstprossesering(Pa, U, Ib, sikring, karakeristikk, Cable_size, Cable_Curre
                 lines[i] = lines[i].replace("{temp}",str(temp))
                 lines[i] = lines[i].replace("{kabler}",str(kabler))
                 lines[i] = lines[i].replace("{lengde_kabel}",str(lengde_kabel))
+                lines[i] = lines[i].replace("{Rho}",str(math.floor(Rho*100000)/100000))
+                lines[i] = lines[i].replace("{leder_temp}",str(leder_temp))
                 if distanse_kabel == "J":
                     lines[i] = lines[i].replace("{distanse_kabel}",str(distanse_kabel))
                 if distanse_tak == "J":
@@ -209,11 +222,12 @@ def tekstprossesering(Pa, U, Ib, sikring, karakeristikk, Cable_size, Cable_Curre
                 lines[i] = lines[i].replace("{gruppe_tabell}",str(table_52B_1(forlegning)[4]))
 
                 lines[i] = lines[i].replace("{motorstrøm}",str(f",[1],{Pa},{U},{cos_phi},{n},{math.ceil(Ib*100)/100}"))
-                lines[i] = lines[i].replace("{spenningsfall}",str(f",[2],{lengde_kabel}M,{math.ceil(Ib*100)/100}A,{cos_phi},{Cable_size}mm^2,{math.ceil(DeltaU*100)/100}"))
+                lines[i] = lines[i].replace("{spenningsfall}",str(f",[2],{math.floor(Rho*100000)/100000},{lengde_kabel}M,{math.ceil(Ib*100)/100}A,{cos_phi},{Cable_size}mm^2,{math.ceil(DeltaU*100)/100}"))
                 lines[i] = lines[i].replace("{spenningsfall_prosent}",str(f",[3],{math.ceil(DeltaU*100)/100}V,{U}V,{math.ceil(deltaU*100)/100}"))
                 lines[i] = lines[i].replace("{krav_strøm}",str(f",[4],{math.ceil(Ib*100)/100},{sikring},{math.ceil(Cable_Current*100)/100}"))
-                lines[i] = lines[i].replace("{effekttap}",str(f",[5],{lengde_kabel}M,{math.ceil(Ib*100)/100}A,{U}V,{Cable_size}mm^2,{math.ceil(DeltaP*100)/100}W"))
+                lines[i] = lines[i].replace("{effekttap}",str(f",[5],{math.floor(Rho*100000)/100000},{lengde_kabel}M,{Cable_size}mm^2,{math.ceil(Ib*100)/100}A,{math.ceil(DeltaP*100)/100}W"))
                 lines[i] = lines[i].replace("{effekttap_Prosent}",str(f",[6],{math.ceil(DeltaP*100)/100}W,{math.ceil(Ib*100)/100}A,{U}V,{math.ceil(deltaP*100)/100}"))
+                lines[i] = lines[i].replace("{Rho_f}",str(f",[7],{leder_temp}°C,{math.floor(Rho*100000)/100000}"))
                 lines[i] = lines[i].replace("{I_start}", str(math.ceil(Ib * SI * 100) / 100))
                 karakt_lower = {"A": 2, "B": 3, "C": 5, "K": 8, "D": 10}
                 lines[i] = lines[i].replace("{karakteristikk_trip}", str(karakt_lower.get(karakeristikk, 0) * sikring))
@@ -221,11 +235,10 @@ def tekstprossesering(Pa, U, Ib, sikring, karakeristikk, Cable_size, Cable_Curre
                 lines[i] = lines[i].replace("{DeltaP}", str(math.ceil(DeltaP*100)/100))
                 lines[i] = lines[i].replace("{deltaP}", str(math.ceil(deltaP*100)/100))
     lines =[line for line in lines if "#" not in line]
-
     return lines
 
-def skriv(Pa, U, Ib, sikring, karakeristikk, Cable_size, Cable_Current, DeltaU, deltaU, isolasjon, kabler, lengde_kabel, distanse_kabel, distanse_tak, kabelbro, kabelbro1, kabelbro2, kabelbro3, krav, gruppe_faktor, temp_faktor,cos_phi, n,temp,SI,forlegning,karakteristikk_område,izmaks,DeltaP, deltaP,Pkrav):
-    lines = tekstprossesering(Pa, U, Ib, sikring, karakeristikk, Cable_size, Cable_Current, DeltaU, deltaU, isolasjon, kabler, lengde_kabel, distanse_kabel, distanse_tak, kabelbro, kabelbro1, kabelbro2, kabelbro3, krav, gruppe_faktor, temp_faktor,cos_phi, n,temp,SI,forlegning,karakteristikk_område,izmaks,DeltaP, deltaP,Pkrav)
+def skriv(Pa, U, Ib, sikring, karakeristikk, Cable_size, Cable_Current, DeltaU, deltaU, isolasjon, kabler, lengde_kabel, distanse_kabel, distanse_tak, kabelbro, kabelbro1, kabelbro2, kabelbro3, krav, gruppe_faktor, temp_faktor,cos_phi, n,temp,SI,forlegning,karakteristikk_område,izmaks,DeltaP, deltaP,Pkrav,Rho,leder_temp):
+    lines = tekstprossesering(Pa, U, Ib, sikring, karakeristikk, Cable_size, Cable_Current, DeltaU, deltaU, isolasjon, kabler, lengde_kabel, distanse_kabel, distanse_tak, kabelbro, kabelbro1, kabelbro2, kabelbro3, krav, gruppe_faktor, temp_faktor,cos_phi, n,temp,SI,forlegning,karakteristikk_område,izmaks,DeltaP, deltaP,Pkrav,Rho,leder_temp)
     print("Skriver om 5 sekunder...")
     time.sleep(5)
     lines =[line for line in lines if "{" not in line]
