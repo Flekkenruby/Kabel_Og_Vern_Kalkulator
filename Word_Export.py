@@ -1,9 +1,14 @@
-import os, math,time, keyboard
+import os, math, time, sys, keyboard
 from tables import *
+
+def _app_dir():
+    if getattr(sys, 'frozen', False):
+        return os.path.dirname(sys.executable)
+    return os.path.dirname(os.path.abspath(__file__))
 
 
 def les():
-    current_dir = os.path.dirname(os.path.abspath(__file__))
+    current_dir = _app_dir()
     if os.path.exists(current_dir+"\\mal.txt"):
         path=current_dir+r"\mal.txt"
         return path
@@ -222,10 +227,10 @@ def tekstprossesering(Pa, U, Ib, sikring, karakeristikk, Cable_size, Cable_Curre
                 lines[i] = lines[i].replace("{gruppe_tabell}",str(table_52B_1(forlegning)[4]))
 
                 lines[i] = lines[i].replace("{motorstrøm}",str(f",[1],{Pa},{U},{cos_phi},{n},{math.ceil(Ib*100)/100}"))
-                lines[i] = lines[i].replace("{spenningsfall}",str(f",[2],{math.floor(Rho*100000)/100000},{lengde_kabel}M,{math.ceil(Ib*100)/100}A,{cos_phi},{Cable_size}mm^2,{math.ceil(DeltaU*100)/100}"))
+                lines[i] = lines[i].replace("{spenningsfall}",str(f",[2],{math.floor(Rho*100000)/100000},{lengde_kabel}m,{math.ceil(Ib*100)/100}A,{cos_phi},{Cable_size}mm^2,{math.ceil(DeltaU*100)/100}"))
                 lines[i] = lines[i].replace("{spenningsfall_prosent}",str(f",[3],{math.ceil(DeltaU*100)/100}V,{U}V,{math.ceil(deltaU*100)/100}"))
                 lines[i] = lines[i].replace("{krav_strøm}",str(f",[4],{math.ceil(Ib*100)/100},{sikring},{math.ceil(Cable_Current*100)/100}"))
-                lines[i] = lines[i].replace("{effekttap}",str(f",[5],{math.floor(Rho*100000)/100000},{lengde_kabel}M,{Cable_size}mm^2,{math.ceil(Ib*100)/100}A,{math.ceil(DeltaP*100)/100}W"))
+                lines[i] = lines[i].replace("{effekttap}",str(f",[5],{math.floor(Rho*100000)/100000},{lengde_kabel}m,{Cable_size}mm^2,{math.ceil(Ib*100)/100}A,{math.ceil(DeltaP*100)/100}W"))
                 lines[i] = lines[i].replace("{effekttap_Prosent}",str(f",[6],{math.ceil(DeltaP*100)/100}W,{math.ceil(Ib*100)/100}A,{U}V,{math.ceil(deltaP*100)/100}"))
                 lines[i] = lines[i].replace("{Rho_f}",str(f",[7],{leder_temp}°C,{math.floor(Rho*100000)/100000}"))
                 lines[i] = lines[i].replace("{I_start}", str(math.ceil(Ib * SI * 100) / 100))

@@ -46,7 +46,7 @@ def karakteristikk_område(karakteristikk):
     index = karaktt.index(karakteristikk)
     return karakt[index]
 
-def kabel(forlegning, sikring, temp, isolasjon, kabler, kabelbro, kabelbro1, kabelbro2, kabelbro3, distanse_kabel, distanse_tak, lengde_kabel, Ib, krav, U, Pkrav, Rho):
+def kabel(forlegning, sikring, temp, isolasjon, kabler, kabelbro, kabelbro1, kabelbro2, kabelbro3, distanse_kabel, distanse_tak, lengde_kabel, Ib, krav, U, Pkrav, Rho, cos_phi):
     col = None
     #forlegning
     main = table_52B_1(forlegning)
@@ -117,7 +117,49 @@ def kabel(forlegning, sikring, temp, isolasjon, kabler, kabelbro, kabelbro1, kab
                 return [kvadrat[i],Iz,0,0,temp_faktor,gruppe_faktor,col[i],0,0]
     raise ValueError("Ingen passende kabelstørrelse funnet. Sjekk inndata (spenningsfall, effekttap, eller for mange kabler).")
 
-while True:
+def main(Pa, U, cos_phi, n, SI, forlegning, temp, leder_temp, isolasjon, kabler, lengde_kabel, kabelbro, kabelbro1, kabelbro2, kabelbro3, distanse_kabel, distanse_tak, krav, Pkrav, word_export=False):
+    Ib = Pa / (math.sqrt(3) * U * cos_phi * n)
+    Rho = 0.0175 * (1+ 0.00393 * (leder_temp - 20))
+    sikring = None
+    # Select fuse
+    while sikring is None:
+        for i in range(len(sikringer)):
+            if sikringer[i] >= Ib:
+                sikring = sikringer[i]
+                break
+
+    # Print results
+    cable_size, cable_current, DeltaU, deltaU, temp_faktor, gruppe_faktor, Izmaks, DeltaP, deltaP = kabel(forlegning, sikring, temp, isolasjon, kabler, kabelbro, kabelbro1, kabelbro2, kabelbro3, distanse_kabel, distanse_tak, lengde_kabel, Ib, krav, U, Pkrav, Rho, cos_phi)
+    if cable_current == 0:
+        raise ValueError("Det er for mange kabler. Vennligst prøv igjen med mindre antall kabler.")
+    print(
+        f"Ib = {math.ceil(Ib*100)/100}A, \n"
+        f"Sikring = {sikring}A, \n"
+        f"Karakteristikk = {karakteristikk(Ib, SI, sikring)}, \n"
+        f"Kabel = {math.ceil(cable_size*100)/100}mm², \n"
+        f"Iz = {math.ceil(cable_current*100)/100}A, \n"
+        f"ΔU = {math.ceil(DeltaU*100)/100}V, \n"
+        f"Δu = {math.ceil(deltaU*100)/100}%"
+    )
+    if word_export:
+        skriv(Pa, U, Ib, sikring, karakteristikk(Ib, SI, sikring), cable_size, cable_current, DeltaU, deltaU, isolasjon, kabler, lengde_kabel, distanse_kabel, distanse_tak, kabelbro, kabelbro1, kabelbro2, kabelbro3, krav, gruppe_faktor, temp_faktor,cos_phi, n,temp,SI,forlegning,karakteristikk_område(karakteristikk(Ib, SI, sikring)),Izmaks,DeltaP, deltaP,Pkrav,Rho,leder_temp)
+        print("Programmet er ferdig å skrive.")
+    return {
+        "Ib": math.ceil(Ib*100)/100,
+        "Sikring": sikring,
+        "Karakteristikk": karakteristikk(Ib, SI, sikring),
+        "Kabel": math.ceil(cable_size*100)/100,
+        "Iz": math.ceil(cable_current*100)/100,
+        "DeltaU": math.ceil(DeltaU*100)/100,
+        "deltaU": math.ceil(deltaU*100)/100,
+        "DeltaP": math.ceil(DeltaP*100)/100,
+        "deltaP": math.ceil(deltaP*100)/100,
+    }
+   
+
+
+if __name__ == "__main__":
+ while True:
     try:
         sikring = None
         kabelbro1 = None
@@ -178,36 +220,13 @@ while True:
         cos_phi = float(cos_phi)
         n = float(n)
 
-        Ib = Pa / (math.sqrt(3) * U * cos_phi * n)
-        Rho = 0.0175 * (1+ 0.00393 * (leder_temp - 20))
-        # Select fuse
-        while sikring is None:
-            for i in range(len(sikringer)):
-                if sikringer[i] >= Ib:
-                    sikring = sikringer[i]
-                    break
-
-        # Print results
-        cable_size, cable_current, DeltaU, deltaU, temp_faktor, gruppe_faktor, Izmaks, DeltaP, deltaP = kabel(forlegning, sikring, temp, isolasjon, kabler, kabelbro, kabelbro1, kabelbro2, kabelbro3, distanse_kabel, distanse_tak, lengde_kabel, Ib, krav, U, Pkrav, Rho)
-        if cable_current == 0:
-            raise ValueError("Det er for mange kabler. Vennligst prøv igjen med mindre antall kabler.")
-        print(
-            f"Ib = {math.ceil(Ib*100)/100}A, \n"
-            f"Sikring = {sikring}A, \n"
-            f"Karakteristikk = {karakteristikk(Ib, SI, sikring)}, \n"
-            f"Kabel = {math.ceil(cable_size*100)/100}mm², \n"
-            f"Iz = {math.ceil(cable_current*100)/100}A, \n"
-            f"ΔU = {math.ceil(DeltaU*100)/100}V, \n"
-            f"Δu = {math.ceil(deltaU*100)/100}%"
-        )
         a = input("Vil du skrive inn i word? (J/N): ").upper()
-        if a == "J":
-            skriv(Pa, U, Ib, sikring, karakteristikk(Ib, SI, sikring), cable_size, cable_current, DeltaU, deltaU, isolasjon, kabler, lengde_kabel, distanse_kabel, distanse_tak, kabelbro, kabelbro1, kabelbro2, kabelbro3, krav, gruppe_faktor, temp_faktor,cos_phi, n,temp,SI,forlegning,karakteristikk_område(karakteristikk(Ib, SI, sikring)),Izmaks,DeltaP, deltaP,Pkrav,Rho,leder_temp)
-            print("Programmet er ferdig å skrive.")
-            #Pa, U, Ib, sikring, karakeristikk, Cable_size, Cable_Current, DeltaU, deltaU, isolasjon, kabler, lengde_kabel, distanse_kabel, distanse_tak, kabelbro, kabelbro1, kabelbro2, kabelbro3, krav, kvadrat, gruppe_faktor, temp_faktor 
+        main(Pa, U, cos_phi, n, SI, forlegning, temp, leder_temp, isolasjon, kabler, lengde_kabel, kabelbro, kabelbro1, kabelbro2, kabelbro3, distanse_kabel, distanse_tak, krav, Pkrav, word_export=(a == "J"))
     except Exception as e:
         print("Error:", e)
     except ValueError as e:
         print("Value Error:", e)
     finally:
         print("Programmet er avsluttet.")
+
+
