@@ -38,6 +38,7 @@ class Tooltip:
         
 class App(ctk.CTk):
     def __init__(self):
+        ctk.set_appearance_mode("dark")
         super().__init__()
         self.title("Kabel og vern kalkulator")
         self.update()
